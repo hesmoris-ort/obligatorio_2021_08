@@ -1,9 +1,21 @@
 ---
-# These tasks are responsible for copying the latest dev/production code from
-# the version control system.
+# Estas tareas se encargan de descargar la última versión de la aplicación y de configurarla.
 
-- name: Copy the code from repository
-  git: repo={{ repository }} dest=/var/www/html/
+- name: Copiar código del repositorio
+  ansible.builtin.git: 
+    repo: "{{ repository }}"
+    dest: /var/www/html/
 
-- name: Creates the index.php file
-  template: src=index.php.j2 dest=/var/www/html/index.php
+- name: Configurar archivo index.php
+  ansible.builtin.template:
+    src: index.php.j2 
+    dest: /var/www/html/index.php
+
+- name: Configurar httpd para que use, por defecto, el archivo index.php en vez de index.html
+  ansible.builtin.lineinfile:
+    path: "/etc/httpd/conf/httpd.conf"
+    regexp: '^(.*)DirectoryIndex index.html(.*)$' 
+    line: "    DirectoryIndex index.php"
+    state: present
+    backrefs: yes
+  notify: httpd restart
