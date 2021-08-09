@@ -1,0 +1,16 @@
+---
+# Handler para configuraciones de servidor de base de datos en Ubuntu
+
+# Reiniciar y dejar habilitado el servicio “mariadb”
+- name: restart mariadb
+  ansible.builtin.systemd:
+    name: mariadb
+    state: restarted
+    enabled: yes
+
+# Reiniciar y dejar habilitado el servicio “ufw”
+- name: restart ufw
+  ansible.builtin.systemd:
+    name: ufw 
+    state: restarted 
+    enabled: yes
