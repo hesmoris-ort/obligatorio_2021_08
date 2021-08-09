@@ -1,23 +1,72 @@
 ---
-# This playbook deploys the whole application stack in this site.
+# Este libro de tareas está hecho con mucho amor y sangre!!! - Hansi
+# Lanzador de tareas de acuerdo con distribución, grupo de equipos y etiquetas
 
-- name: apply common configuration to all nodes
-  hosts: all
-  remote_user: root
+ - name: Hablando con todos los equipos para conocer la distribución
+   hosts: all
+   tags:
+     - centos-basic
+     - ubuntu-basic
+     - ubuntu-web
+     - centos-web
+     - centos-db
+     - ubuntu-db
+   tasks:
 
-  roles:
-    - common
+     - name: Haciendo grupos por distribución
+       ansible.builtin.group_by:
+         key: os_{{ ansible_facts['distribution'] }}
 
-- name: configure and deploy the webservers and application code
-  hosts: webservers
-  remote_user: root
+ - name: Aplicar configuración básica a todos los equipos con distribución CentOS
+   hosts: os_CentOS
+   gather_facts: false
+   become: yes
+   tags:
+    - centos-basic
+   roles: 
+    - common_centos
 
-  roles:
-    - web
+ - name: Aplicar configuración básica a todos los equipos con distribución Ubuntu 
+   hosts: os_Ubuntu
+   gather_facts: false
+   become: yes
+   tags:
+    - ubuntu-basic
+   roles: 
+    - common_ubuntu
 
-- name: deploy MySQL and configure the databases
-  hosts: dbservers
-  remote_user: root
+ - name: Instalación y configuración de servidor web para CentOS, a equipos webservers
+   hosts: webservers
+   become: yes
+   tags:
+    - centos-web
+   roles:
+    - role: web_centos
+      when: ansible_facts['distribution'] == "CentOS"
 
-  roles:
-    - db
+ - name: Instalación y configuración de servidor web para Ubuntu, a equipos webservers
+   hosts: webservers
+   become: yes
+   tags:
+    - ubuntu-web
+   roles: 
+     - role: web_ubuntu
+       when: ansible_facts['distribution'] == "Ubuntu"
+
+ - name: Instalación y configuración de servidor de base de datos para CentOS, a equipos dbservers
+   hosts: dbservers
+   become: yes
+   tags:
+    - centos-db
+   roles:
+    - role: db_centos
+      when: ansible_facts['distribution'] == "CentOS"
+
+ - name: Instalación y configuración de servidor de base de datos para Ubuntu, a equipos dbservers
+   hosts: dbservers
+   become: yes
+   tags:
+    - ubuntu-db
+   roles:
+    - role: db_ubuntu
+      when: ansible_facts['distribution'] == "Ubuntu"
