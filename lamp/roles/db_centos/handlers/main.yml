@@ -1,5 +1,9 @@
 ---
-# Handler to handle DB tier notifications
+# Handler para configuraciones de servidor de base de datos en CentOS
 
+# Reiniciar y dejar habilitado el servicio “mariadb”
 - name: restart mariadb
-  service: name=mariadb state=restarted
+  ansible.builtin.systemd:
+    name: mariadb
+    state: restarted
+    enabled: yes
