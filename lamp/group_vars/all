@@ -1,7 +1,18 @@
 ---
-# Variables listed here are applicable to all host groups
-#
+# Variables que se aplican a todos los host y roles
 
-httpd_port: 80
-ntpserver: 192.168.1.2
-repository: https://github.com/bennojoy/mywebapp.git
+# Modifique la zona horaria de acuerdo con lo que corresponda
+# Puede ver las zonas horarias en el sistema con el comando “timedatectl list-timezones”
+timezone: "America/Montevideo"
+
+# Modifique los servidores ntp de acuerdo con sus necesidades
+ntpserver0: "0.south-america.pool.ntp.org"
+ntpserver1: "1.south-america.pool.ntp.org"
+ntpserver2: "2.south-america.pool.ntp.org"
+
+# Configuración de MariaDB
+mysqlservice: mysqld
+mysql_port: "3306"
+dbuser: foouser
+dbname: foodb
+upassword: redhat
