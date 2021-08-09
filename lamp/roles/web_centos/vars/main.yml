@@ -1,0 +1,8 @@
+---
+# Variables para web_centos
+
+# Servicio que se utiliza para abrir el puerto en el firewall, se podrían definir más u otros
+httpd_service: http
+
+# Ubicación del repositorio de la aplicación 
+repository: https://github.com/bennojoy/mywebapp.git
