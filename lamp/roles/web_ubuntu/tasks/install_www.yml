@@ -1,4 +1,7 @@
-- name: Install httpd and php
+---
+# Configuración e instalación de servidor web para Ubuntu
+
+- name: Instalar apache2, php y herramientas
   ansible.builtin.apt:
     name: "{{ item }}"
     state: latest
@@ -10,35 +13,25 @@
    - libapache2-mod-apparmor
    - apparmor-utils
 
-- name: Install web role specific dependencies
+- name: Instalar última versión de git
   ansible.builtin.apt:
     name: git
     state: latest
 
-- name: insert ufw rule for apache
+- name: Crear regla en ufw, para aceptar conexiones a “Apache”
   community.general.ufw:
-# Depende de que esté Apache instalado
     rule: allow
     state: enabled
     name: "Apache"
   notify: restart ufw
-
-#- name: permitirconexiones salientes a base de datos
-#  community.general.ufw:
-# Depende de que esté Apache instalado
-#    rule: allow
-#    to_port: "{{ mysql_port }}"
-#    proto: tcp
-#    direction: outgoing
-#    state: enabled
     
-- name: http service state
+- name: apache2 iniciado y habilitado
   ansible.builtin.systemd:
     name: apache2
     state: started
     enabled: yes
 
-- name: Configure apparmor to allow httpd to connect to remote database
+- name: Configurar apparmor para apache
   command:
      cmd: "{{ item }}"
   loop:
@@ -46,8 +39,3 @@
    - a2enmod mpm_prefork
    - a2enmod apparmor
   notify: restart apache2
-
-#  ansible.posix.seboolean: 
-#    name: httpd_can_network_connect_db 
-#    state: true 
-#    persistent: yes
