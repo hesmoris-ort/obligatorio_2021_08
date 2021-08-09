@@ -1,0 +1,15 @@
+---
+# Handler para configuraciones de servidor web en Ubuntu
+
+# Reiniciar y dejar habilitado el servicio “apache”
+- name: restart apache2
+  ansible.builtin.systemd:
+    name: apache2
+    state: restarted
+
+# Reiniciar y dejar habilitado el servicio “ufw”
+- name: restart ufw
+  ansible.builtin.systemd:
+    name: ufw 
+    state: restarted 
+    enabled: yes
