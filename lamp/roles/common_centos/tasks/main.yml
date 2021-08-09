@@ -1,5 +1,5 @@
 ---
-# Configuración para básica para todos los equipos CentOS 
+# Configuración básica para todos los equipos CentOS 
 
  - name: Verificar que epel este instalado
    ansible.builtin.yum:
