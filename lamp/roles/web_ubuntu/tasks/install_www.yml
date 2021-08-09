@@ -1,0 +1,53 @@
+- name: Install httpd and php
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: latest
+  loop:
+   - apache2
+   - php
+   - libapache2-mod-php
+   - php-mysql
+   - libapache2-mod-apparmor
+   - apparmor-utils
+
+- name: Install web role specific dependencies
+  ansible.builtin.apt:
+    name: git
+    state: latest
+
+- name: insert ufw rule for apache
+  community.general.ufw:
+# Depende de que esté Apache instalado
+    rule: allow
+    state: enabled
+    name: "Apache"
+  notify: restart ufw
+
+#- name: permitirconexiones salientes a base de datos
+#  community.general.ufw:
+# Depende de que esté Apache instalado
+#    rule: allow
+#    to_port: "{{ mysql_port }}"
+#    proto: tcp
+#    direction: outgoing
+#    state: enabled
+    
+- name: http service state
+  ansible.builtin.systemd:
+    name: apache2
+    state: started
+    enabled: yes
+
+- name: Configure apparmor to allow httpd to connect to remote database
+  command:
+     cmd: "{{ item }}"
+  loop:
+   - aa-enforce /etc/apparmor.d/usr.sbin.apache2
+   - a2enmod mpm_prefork
+   - a2enmod apparmor
+  notify: restart apache2
+
+#  ansible.posix.seboolean: 
+#    name: httpd_can_network_connect_db 
+#    state: true 
+#    persistent: yes
