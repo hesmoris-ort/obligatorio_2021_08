@@ -1,0 +1,52 @@
+---
+# Configuración para básica para todos los equipos Ubuntu
+
+ - name: Verificar que crhonid no esté instalado en Ubuntu
+   ansible.builtin.apt:
+     name: chronyd
+     state: absent
+
+ - name: Instalar paquetes en Ubuntu
+   ansible.builtin.apt:
+     name: "{{ item }}"
+     state: present 
+   loop:
+    - systemd-timesyncd
+    - apparmor-profiles
+    - libsemanage1
+    - apparmor-utils
+
+ - name: ufw activado
+   ansible.builtin.systemd:
+     name: ufw
+     state: started
+     enabled: yes
+
+ - name: Habilitar OpenSSH en ufw
+   community.general.ufw:
+     rule: allow
+     state: enabled
+     name: "OpenSSH"
+   notify: restart ufw
+
+ - name: Configurar zona horaria
+   community.general.timezone:
+     name: "{{ timezone }}"
+   notify: service systemd-timesyncd
+
+ - name: Cargar los servidores “ntp” en “/etc/systemd/timesyncd.conf”
+   lineinfile:
+     path: /etc/systemd/timesyncd.conf
+     line: "NTP={{ ntpserver1 }} {{ ntpserver2 }} {{ ntpserver2 }}"
+     state: present
+   notify: service systemd-timesyncd
+
+ - name: Habilitar “apparmor” en modo estricto
+   command:
+     cmd: aa-enforce /etc/apparmor.d/*
+
+ - name: Reiniciar y habilitar “apparmor”
+   ansible.builtin.systemd:
+     name: apparmor.service
+     state: restarted
+     enabled: yes 
