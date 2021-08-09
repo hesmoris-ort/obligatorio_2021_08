@@ -1,0 +1,22 @@
+---
+# Handler para tareas básicas en CentOS
+
+# Reiniciar y dejar habilitado el servicio “timesyncd”
+- name: service systemd-timesyncd
+  ansible.builtin.systemd:
+    name: systemd-timesyncd
+    state: restarted
+    enabled: yes 
+
+# Cargar los servidores “ntp” en “/etc/systemd/timesyncd.conf”
+- name: conf ntp
+  lineinfile:
+    path: /etc/systemd/timesyncd.conf
+    line: "NTP={{ ntpserver1 }} {{ ntpserver2 }} {{ ntpserver2 }}"
+    state: present
+
+# Habilitar “selinux” en modo estricto con etiquetado
+- name: enable selinux
+  ansible.posix.selinux:
+    policy: targeted
+    state: enforcing
