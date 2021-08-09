@@ -1,0 +1,13 @@
+[dbservers]
+172.16.0.21
+
+[webservers]
+172.16.0.20
+
+[webservers:vars]
+hostname=server01-ubuntu.taller.linux
+domain=taller.linux
+
+[dbservers:vars]
+hostname=server01-centos.taller.linux
+domain=taller.linux
