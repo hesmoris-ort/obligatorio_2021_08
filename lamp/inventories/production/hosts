@@ -1,0 +1,13 @@
+[dbservers]
+172.16.0.21
+
+[webservers]
+172.16.0.20
+
+[dbservers:vars]
+hostname=amatista-ubuntu.ejemplo.uy
+domain=taller.linux
+
+[webservers:vars]
+hostname=amatista-ubuntu.ejemplo.uy
+domain=taller.linux
