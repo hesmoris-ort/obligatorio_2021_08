@@ -1,26 +1,35 @@
 ---
-# These tasks install http and the php modules.
+# Configuración e instalación de servidor web para CentOS
 
-- name: Install httpd and php
-  yum: name={{ item }} state=present
-  with_items:
+- name: Instalar httpd y php
+  ansible.builtin.yum: 
+    name: "{{ item }}"
+    state: latest
+  loop:
    - httpd
    - php
-   - php-mysql
+   - php-mysqlnd
 
-- name: Install web role specific dependencies
-  yum: name={{ item }} state=installed
-  with_items:
-   - git
+- name: Instalar última versión de git
+  ansible.builtin.yum: 
+    name: git
+    state: latest
 
-- name: Start firewalld
-  service: name=firewalld state=started enabled=yes
+- name: Crear regla en firewalld, para aceptar conexiones entrantes a el o los puertos definidos en la sección de variables
+  ansible.posix.firewalld: 
+    service: "{{ httpd_service }}"
+    permanent: yes 
+    state: enabled 
+    immediate: yes
 
-- name: insert firewalld rule for httpd
-  firewalld: port={{ httpd_port }}/tcp permanent=true state=enabled immediate=yes
+- name: httpd iniciado y habilitado
+  ansible.builtin.systemd:
+    name: httpd
+    state: started
+    enabled: yes
 
-- name: http service state
-  service: name=httpd state=started enabled=yes
-
-- name: Configure SELinux to allow httpd to connect to remote database
-  seboolean: name=httpd_can_network_connect_db state=true persistent=yes
+- name: Configurar selinux para permitir conexiones de httpd a equipos remotos
+  ansible.posix.seboolean:
+    name: httpd_can_network_connect_db 
+    state: true 
+    persistent: yes
