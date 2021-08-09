@@ -1,0 +1,75 @@
+---
+# Configuración e instalación de servidor de base de datos para Ubuntu
+
+- name: Instalar última versión MariaDB y herramientas
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: latest
+  loop:
+   - mariadb-server
+   - python3-pymysql
+
+
+- name: Crear archivo de configuración para MariaDB
+  ansible.builtin.template:
+   src: my.cnf.j2 
+   dest: /etc/my.cnf
+   force: yes
+  notify:
+   - restart mariadb
+
+- name: Crear archivo de log para MariaDB
+  ansible.builtin.file:
+    path: /var/log/mysqld.log 
+    state: touch 
+    owner: mysql 
+    group: mysql 
+    mode: 0775
+
+- name: Crear archivo de PID para MariaDB
+  ansible.builtin.file:
+    path: /var/run/mysqld 
+    state: directory 
+    owner: mysql 
+    group: mysql 
+    mode: 0775
+  notify:
+  - restart mariadb
+
+- name: Iniciar y habilitar MariaDB
+  ansible.builtin.systemd: 
+    name: mariadb 
+    state: started 
+    enabled: yes
+
+- name: Habilitar MariaDB, para que acepte conexiones desde cualquier dirección
+  ansible.builtin.lineinfile:
+    path: "/etc/mysql/mariadb.conf.d/50-server.cnf"
+    regexp: '^(.*)bind-address            = 127.0.0.1(.*)$'
+    line: "bind-address            = 0.0.0.0"
+    state: present
+    backrefs: yes
+
+- name: Crear regla en ufw, para aceptar conexiones entrantes a MariaDB
+  community.general.ufw: 
+    to_port: "{{ mysql_port }}"
+    proto: "tcp"
+    direction: in
+    rule: allow
+    state: enabled
+  notify: restart ufw
+
+- name: Crear base de datos para la aplicación
+  community.mysql.mysql_db:
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+    name: "{{ dbname }}" 
+    state: present
+
+- name: Crear usuario para la base de datos, con permisos de acceso desde cualquier dirección
+  community.mysql.mysql_user:
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+    name: "{{ dbuser }}" 
+    password: "{{ upassword }}" 
+    priv: "*.*:ALL"
+    host: '%'
+    state: present
