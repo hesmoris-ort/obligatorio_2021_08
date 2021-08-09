@@ -1,13 +1,13 @@
 [dbservers]
-172.16.0.21
+10.189.247.20
 
 [webservers]
-172.16.0.20
+10.189.247.21
 
 [dbservers:vars]
-hostname=amatista-ubuntu.ejemplo.uy
-domain=taller.linux
+hostname=garnet-centos.ejemplo.uy
+domain=ejemplo.uy
 
 [webservers:vars]
 hostname=amatista-ubuntu.ejemplo.uy
-domain=taller.linux
+domain=ejemplo.uy
