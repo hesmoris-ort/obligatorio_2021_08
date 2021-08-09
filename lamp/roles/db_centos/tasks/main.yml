@@ -1,37 +1,67 @@
 ---
-# This playbook will install MariaDB and create db user and give permissions.
+# Configuración e instalación de servidor de base de datos para CentOS
 
-- name: Install MariaDB package
-  yum: name={{ item }} state=installed
-  with_items:
+- name: Instalar última versión MariaDB y herramientas
+  ansible.builtin.yum:
+    name: "{{ item }}"
+    state: latest
+  loop:
    - mariadb-server
-   - MySQL-python
+   - python3-PyMySQL
 
-- name: Configure SELinux to start mysql on any port
-  seboolean: name=mysql_connect_any state=true persistent=yes
+- name: Configurar selinux para permitir conexiones a MariaDB desde cualquier parte
+  ansible.posix.seboolean:
+    name: mysql_connect_any 
+    state: yes 
+    persistent: yes
 
-- name: Create Mysql configuration file
-  template: src=my.cnf.j2 dest=/etc/my.cnf
+- name: Crear archivo de configuración para MariaDB
+  ansible.builtin.template:
+   src: my.cnf.j2 
+   dest: /etc/my.cnf
   notify:
-  - restart mariadb
+   - restart mariadb
 
-- name: Create MariaDB log file
-  file: path=/var/log/mysqld.log state=touch owner=mysql group=mysql mode=0775
+- name: Crear archivo de log para MariaDB
+  ansible.builtin.file:
+    path: /var/log/mysqld.log 
+    state: touch 
+    owner: mysql 
+    group: mysql 
+    mode: 0775
 
-- name: Create MariaDB PID directory
-  file: path=/var/run/mysqld state=directory owner=mysql group=mysql mode=0775
+- name: Crear archivo de PID para MariaDB
+  ansible.builtin.file:
+    path: /var/run/mysqld 
+    state: directory 
+    owner: mysql 
+    group: mysql 
+    mode: 0775
+  notify:
+   - restart mariadb    
 
-- name: Start MariaDB Service
-  service: name=mariadb state=started enabled=yes
+- name: Iniciar y habilitar MariaDB
+  ansible.builtin.systemd: 
+    name: mariadb 
+    state: started 
+    enabled: yes
 
-- name: Start firewalld
-  service: name=firewalld state=started enabled=yes
+- name: Crear regla en firewalld, para aceptar conexiones entrantes a MariaDB
+  ansible.posix.firewalld: 
+    port: "{{ mysql_port }}/tcp"
+    permanent: yes 
+    state: enabled 
+    immediate: yes
 
-- name: insert firewalld rule
-  firewalld: port={{ mysql_port }}/tcp permanent=true state=enabled immediate=yes
+- name: Crear base de datos para la aplicación
+  community.mysql.mysql_db:
+    name: "{{ dbname }}" 
+    state: present
 
-- name: Create Application Database
-  mysql_db: name={{ dbname }} state=present
-
-- name: Create Application DB User
-  mysql_user: name={{ dbuser }} password={{ upassword }} priv=*.*:ALL host='%' state=present
+- name: Crear usuario para la base de datos, con permisos de acceso desde cualquier dirección
+  community.mysql.mysql_user: 
+    name: "{{ dbuser }}" 
+    password: "{{ upassword }}" 
+    priv: "*.*:ALL"
+    host: '%'
+    state: present
