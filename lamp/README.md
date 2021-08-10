@@ -3,7 +3,7 @@
 
 Este libro de trabajos está desarrollado y probado con Ansible 2.9.6
 
-A través de este libro de trabajo podemos instalar y configurar servidores CentOS y Ubuntu, con los servicios LAMP
+A través de este libro de trabajo podemos instalar y configurar los servicios LAMP, en servidores CentOS y Ubuntu
 
 En el libro de tareas “site.yml” a través de roles:
 -	Se lanzan las tareas básicas de configuración para todos los equipos.
