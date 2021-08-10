@@ -1,0 +1,72 @@
+---
+# Este libro de tareas está hecho con mucho amor y sangre!!! - Hansi
+# Lanzador de tareas de acuerdo con distribución, grupo de equipos y etiquetas
+
+ - name: Hablando con todos los equipos para conocer la distribución
+   hosts: all
+   tags:
+     - centos-basic
+     - ubuntu-basic
+     - ubuntu-web
+     - centos-web
+     - centos-db
+     - ubuntu-db
+   tasks:
+
+     - name: Haciendo grupos por distribución
+       ansible.builtin.group_by:
+         key: os_{{ ansible_facts['distribution'] }}
+
+ - name: Aplicar configuración básica a todos los equipos con distribución CentOS
+   hosts: os_CentOS
+   gather_facts: false
+   become: yes
+   tags:
+    - centos-basic
+   roles: 
+    - common_centos
+
+ - name: Aplicar configuración básica a todos los equipos con distribución Ubuntu 
+   hosts: os_Ubuntu
+   gather_facts: false
+   become: yes
+   tags:
+    - ubuntu-basic
+   roles: 
+    - common_ubuntu
+
+ - name: Instalación y configuración de servidor web para CentOS, a equipos webservers
+   hosts: webservers
+   become: yes
+   tags:
+    - centos-web
+   roles:
+    - role: web_centos
+      when: ansible_facts['distribution'] == "CentOS"
+
+ - name: Instalación y configuración de servidor web para Ubuntu, a equipos webservers
+   hosts: webservers
+   become: yes
+   tags:
+    - ubuntu-web
+   roles: 
+     - role: web_ubuntu
+       when: ansible_facts['distribution'] == "Ubuntu"
+
+ - name: Instalación y configuración de servidor de base de datos para CentOS, a equipos dbservers
+   hosts: dbservers
+   become: yes
+   tags:
+    - centos-db
+   roles:
+    - role: db_centos
+      when: ansible_facts['distribution'] == "CentOS"
+
+ - name: Instalación y configuración de servidor de base de datos para Ubuntu, a equipos dbservers
+   hosts: dbservers
+   become: yes
+   tags:
+    - ubuntu-db
+   roles:
+    - role: db_ubuntu
+      when: ansible_facts['distribution'] == "Ubuntu"
