@@ -25,6 +25,13 @@
     immediate: yes
   when: ansible_facts['distribution'] == "CentOS"
 
+- name: Iniciar y habilitar MariaDB
+  ansible.builtin.systemd: 
+    name: mariadb 
+    state: started 
+    enabled: yes
+  when: ansible_facts['distribution'] == "CentOS"    
+
 - name: Crear base de datos para la aplicación
   community.mysql.mysql_db:
     name: "{{ dbname }}" 
@@ -69,6 +76,13 @@
     state: enabled
   notify: restart ufw
   when: ansible_facts['distribution'] == "Ubuntu"
+
+- name: Iniciar y habilitar MariaDB
+  ansible.builtin.systemd: 
+    name: mariadb 
+    state: started 
+    enabled: yes
+  when: ansible_facts['distribution'] == "Ubuntu"  
 
 - name: Crear base de datos para la aplicación
   community.mysql.mysql_db:
