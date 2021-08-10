@@ -1,0 +1,17 @@
+---
+# Estas tareas se encargan de descargar la última versión de la aplicación y de configurarla.
+
+- name: Eliminar archivo index.html, por defecto de la instalación de apache para poder hacer el clone con git
+  ansible.builtin.file:
+    path: /var/www/html/index.html
+    state: absent
+
+- name: Copiar código del repositorio
+  ansible.builtin.git: 
+    repo: "{{ repository }}"
+    dest: /var/www/html/
+
+- name: Configurar archivo index.php
+  ansible.builtin.template:
+    src: index.php.j2 
+    dest: /var/www/html/index.php

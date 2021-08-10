@@ -1,0 +1,104 @@
+---
+# Configuración e instalación de servidor web para CentOS
+
+- name: Instalar httpd y php
+  ansible.builtin.yum:
+    state: latest
+    name:
+     - httpd
+     - php
+     - php-mysqlnd
+  when: ansible_facts['distribution'] == "CentOS"
+
+- name: Instalar última versión de git
+  ansible.builtin.yum: 
+    name: git
+    state: latest
+  when: ansible_facts['distribution'] == "CentOS"
+
+- name: Crear regla en firewalld, para aceptar conexiones entrantes a el o los puertos definidos en la sección de variables
+  ansible.posix.firewalld: 
+    service: "{{ httpd_service }}"
+    permanent: yes 
+    state: enabled 
+    immediate: yes
+  when: ansible_facts['distribution'] == "CentOS"
+
+- name: httpd iniciado y habilitado
+  ansible.builtin.systemd:
+    name: httpd
+    state: started
+    enabled: yes
+  when: ansible_facts['distribution'] == "CentOS"
+
+- name: Configurar selinux para permitir conexiones de httpd a equipos remotos
+  ansible.posix.seboolean:
+    name: httpd_can_network_connect_db 
+    state: true 
+    persistent: yes
+  when: ansible_facts['distribution'] == "CentOS"
+
+- name: Configurar httpd para que use, por defecto, el archivo index.php en vez de index.html
+  ansible.builtin.lineinfile:
+    path: "/etc/httpd/conf/httpd.conf"
+    regexp: '^(.*)DirectoryIndex index.html(.*)$' 
+    line: "    DirectoryIndex index.php"
+    state: present
+    backrefs: yes
+  notify: httpd restart
+  when: ansible_facts['distribution'] == "CentOS"
+
+
+# Configuración e instalación de servidor web para Ubuntu
+
+- name: Instalar apache2, php y herramientas
+  ansible.builtin.apt:
+    state: latest
+    name:
+     - apache2
+     - php
+     - libapache2-mod-php
+     - php-mysql
+     - libapache2-mod-apparmor
+     - apparmor-utils
+  when: ansible_facts['distribution'] == "Ubuntu"
+
+- name: Instalar última versión de git
+  ansible.builtin.apt:
+    name: git
+    state: latest
+  when: ansible_facts['distribution'] == "Ubuntu"
+
+- name: Crear regla en ufw, para aceptar conexiones a “Apache”
+  community.general.ufw:
+    rule: allow
+    state: enabled
+    name: "Apache"
+  notify: restart ufw
+  when: ansible_facts['distribution'] == "Ubuntu"
+    
+- name: apache2 iniciado y habilitado
+  ansible.builtin.systemd:
+    name: apache2
+    state: started
+    enabled: yes
+  when: ansible_facts['distribution'] == "Ubuntu"
+
+- name: Configurar apparmor para apache
+  command:
+     cmd: "{{ item }}"
+  loop:
+   - aa-enforce /etc/apparmor.d/usr.sbin.apache2
+   - a2enmod mpm_prefork
+   - a2enmod apparmor
+  notify: restart apache2
+  when: ansible_facts['distribution'] == "Ubuntu"
+
+- name: Configurar httpd para que use, por defecto, el archivo index.php en vez de index.html
+  ansible.builtin.lineinfile:
+    path: "/etc/apache2/mods-enabled/dir.conf"
+    regexp: '^(.*)DirectoryIndex index.html index.cgi index.pl index.php index.xhtml index.htm(.*)$'
+    line: "DirectoryIndex  index.php index.html index.cgi index.pl index.xhtml index.htm"
+    state: present
+    backrefs: yes
+  when: ansible_facts['distribution'] == "Ubuntu"
