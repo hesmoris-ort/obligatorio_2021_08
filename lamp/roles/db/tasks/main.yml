@@ -8,7 +8,7 @@
      - mariadb-server
      - python3-PyMySQL
   when: ansible_facts['distribution'] == "CentOS"
-  
+  notify: restart mariadb
 
 - name: Configurar selinux para permitir conexiones a MariaDB desde cualquier parte
   ansible.posix.seboolean:
@@ -49,6 +49,7 @@
      - python3-pymysql
     state: latest
   when: ansible_facts['distribution'] == "Ubuntu"
+  notify: restart mariadb
 
 - name: Habilitar MariaDB, para que acepte conexiones desde cualquier dirección
   ansible.builtin.lineinfile:
@@ -85,11 +86,3 @@
     host: '%'
     state: present
   when: ansible_facts['distribution'] == "Ubuntu"
-
-# Configuración e instalación de servidor de base de datos para todos los equipos
-
-- name: Iniciar y habilitar MariaDB
-  ansible.builtin.systemd: 
-    name: mariadb 
-    state: started 
-    enabled: yes
