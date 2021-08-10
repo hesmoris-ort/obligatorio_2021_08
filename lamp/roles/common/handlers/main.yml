@@ -14,3 +14,4 @@
     name: ufw 
     state: restarted 
     enabled: yes
+  when: ansible_facts['distribution'] == "Ubuntu"

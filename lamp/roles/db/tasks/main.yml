@@ -1,0 +1,95 @@
+---
+# Configuración e instalación de servidor de base de datos para CentOS
+
+- name: Instalar última versión MariaDB y herramientas
+  ansible.builtin.yum:
+    state: latest 
+    name:
+     - mariadb-server
+     - python3-PyMySQL
+  when: ansible_facts['distribution'] == "CentOS"
+  
+
+- name: Configurar selinux para permitir conexiones a MariaDB desde cualquier parte
+  ansible.posix.seboolean:
+    name: mysql_connect_any 
+    state: yes 
+    persistent: yes
+  when: ansible_facts['distribution'] == "CentOS"
+
+- name: Crear regla en firewalld, para aceptar conexiones entrantes a MariaDB
+  ansible.posix.firewalld: 
+    port: "{{ mysql_port }}/tcp"
+    permanent: yes 
+    state: enabled 
+    immediate: yes
+  when: ansible_facts['distribution'] == "CentOS"
+
+- name: Crear base de datos para la aplicación
+  community.mysql.mysql_db:
+    name: "{{ dbname }}" 
+    state: present
+  when: ansible_facts['distribution'] == "CentOS"
+
+- name: Crear usuario para la base de datos, con permisos de acceso desde cualquier dirección
+  community.mysql.mysql_user: 
+    name: "{{ dbuser }}" 
+    password: "{{ upassword }}" 
+    priv: "*.*:ALL"
+    host: '%'
+    state: present
+  when: ansible_facts['distribution'] == "CentOS"  
+
+# Configuración e instalación de servidor de base de datos para Ubuntu
+
+- name: Instalar última versión MariaDB y herramientas
+  ansible.builtin.apt:
+    name: 
+     - mariadb-server
+     - python3-pymysql
+    state: latest
+  when: ansible_facts['distribution'] == "Ubuntu"
+
+- name: Habilitar MariaDB, para que acepte conexiones desde cualquier dirección
+  ansible.builtin.lineinfile:
+    path: "/etc/mysql/mariadb.conf.d/50-server.cnf"
+    regexp: '^(.*)bind-address            = 127.0.0.1(.*)$'
+    line: "bind-address            = 0.0.0.0"
+    state: present
+    backrefs: yes
+  when: ansible_facts['distribution'] == "Ubuntu"
+
+- name: Crear regla en ufw, para aceptar conexiones entrantes a MariaDB
+  community.general.ufw: 
+    to_port: "{{ mysql_port }}"
+    proto: "tcp"
+    direction: in
+    rule: allow
+    state: enabled
+  notify: restart ufw
+  when: ansible_facts['distribution'] == "Ubuntu"
+
+- name: Crear base de datos para la aplicación
+  community.mysql.mysql_db:
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+    name: "{{ dbname }}" 
+    state: present
+  when: ansible_facts['distribution'] == "Ubuntu"
+
+- name: Crear usuario para la base de datos, con permisos de acceso desde cualquier dirección
+  community.mysql.mysql_user:
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+    name: "{{ dbuser }}" 
+    password: "{{ upassword }}" 
+    priv: "*.*:ALL"
+    host: '%'
+    state: present
+  when: ansible_facts['distribution'] == "Ubuntu"
+
+# Configuración e instalación de servidor de base de datos para todos los equipos
+
+- name: Iniciar y habilitar MariaDB
+  ansible.builtin.systemd: 
+    name: mariadb 
+    state: started 
+    enabled: yes

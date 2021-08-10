@@ -15,14 +15,13 @@
 
  - name: Instalar paquetes en CentOS
    ansible.builtin.yum:
-     name: "{{ item }}"
+     name:
+      - systemd-timesyncd
+      - libselinux
+      - libsemanage
+      - policycoreutils
+      - policycoreutils-python-utils
      state: present 
-   loop:
-    - systemd-timesyncd
-    - libselinux
-    - libsemanage
-    - policycoreutils
-    - policycoreutils-python-utils
    notify: service systemd-timesyncd
    when: ansible_facts['distribution'] == "CentOS"
     
@@ -49,18 +48,16 @@
 
  - name: Instalar paquetes en Ubuntu
    ansible.builtin.apt:
-     name: "{{ item }}"
+     name:
+      - systemd-timesyncd
+      - apparmor-profiles
+      - libsemanage1
+      - apparmor-utils
      state: present 
-   loop:
-    - systemd-timesyncd
-    - apparmor-profiles
-    - libsemanage1
-    - apparmor-utils
    when: ansible_facts['distribution'] == "Ubuntu"
 
- - name: ufw activado
+ - name: ufw activado y habilitado
    ansible.builtin.systemd:
-     tags: test
      name: ufw
      state: started
      enabled: yes
