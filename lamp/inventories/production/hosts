@@ -11,3 +11,6 @@ domain=ejemplo.uy
 [webservers:vars]
 hostname=amatista-ubuntu.ejemplo.uy
 domain=ejemplo.uy
+
+[all:vars]
+ipdb=10.189.247.20
