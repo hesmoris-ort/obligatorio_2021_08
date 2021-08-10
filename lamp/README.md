@@ -1,4 +1,4 @@
-instalación y configuración de LAMP - Para CentOS y Ubuntu
+# instalación y configuración de LAMP - Para CentOS y Ubuntu
 -------------------------------------------
 
 Este libro de trabajos está desarrollado y probado con Ansible 2.9.6
@@ -19,7 +19,7 @@ Es necesario que se definan en el inventario:
 -	Además, para la aplicación, debe indicarse, cuál será la dirección ip del servidor de base de datos en la variable “ipdb”
 
 La tarea se puede ejecutar con el siguiente comando:
-# ansible-playbook site.yml
+_ ansible-playbook site.yml
 
 También es posible la ejecución de las tareas, a través de las etiquetas, que son las siguientes:
 -	     basic
@@ -28,13 +28,13 @@ También es posible la ejecución de las tareas, a través de las etiquetas, que
 
 Las etiquetas, aplican a cada uno de los roles y grupos de equipos, un ejemplo de la ejecución es el siguiente:
 
-# ansible-playbook site.yml --tags db
+_ ansible-playbook site.yml --tags db
 
 Las tareas básicas son requeridas para las demás, ya que se considera que hay programas instalados y activados, que son requeridos.
 
 
 
-Requerimientos
+# Requerimientos
 
 Son requeridos para los trabajos, los módulos de ansible:
 -	ansible.posix
@@ -48,7 +48,7 @@ Los clientes requieren tener un usuario con nombre “ansible”, el mismo debe 
 Se debe configurar el acceso del equipo bastión a los clientes, sin necesidad de uso de contraseña. Puede ser a través de una llave del usuario con el que se ejecuten las tareas en el equipo bastión o cargando un certificado.
 
 
-Pruebas realizadas
+# Pruebas realizadas
 
 Para el desarrollo de la tarea como los roles, se utilizó como bastión un equipo Windows con WSL (Ubuntu 20.04 LTS)
 Para poder trabajar correctamente es necesario habilitar el sistema de permisos en WSL.
