@@ -1,0 +1,101 @@
+---
+# Configuración básica para todos los equipos CentOS 
+
+ - name: Verificar que epel este instalado
+   ansible.builtin.yum:
+     name: epel-release
+     state: present
+   when: ansible_facts['distribution'] == "CentOS"
+
+ - name: Verificar que crhonid no esté instalado en CentOS
+   ansible.builtin.yum:
+     name: chronyd
+     state: absent
+   when: ansible_facts['distribution'] == "CentOS"
+
+ - name: Instalar paquetes en CentOS
+   ansible.builtin.yum:
+     name: "{{ item }}"
+     state: present 
+   loop:
+    - systemd-timesyncd
+    - libselinux
+    - libsemanage
+    - policycoreutils
+    - policycoreutils-python-utils
+   notify: service systemd-timesyncd
+   when: ansible_facts['distribution'] == "CentOS"
+    
+ - name: Verificar que firewalld este iniciado y habilitado 
+   ansible.builtin.systemd:
+     name: firewalld
+     state: started
+     enabled: yes
+   when: ansible_facts['distribution'] == "CentOS"
+
+ - name: Habilitar “selinux” en modo estricto con etiquetado
+   ansible.posix.selinux:
+    policy: targeted
+    state: enforcing
+   when: ansible_facts['distribution'] == "CentOS"
+
+# Configuración para básica para todos los equipos Ubuntu
+
+ - name: Verificar que crhonid no esté instalado en Ubuntu
+   ansible.builtin.apt:
+     name: chronyd
+     state: absent
+   when: ansible_facts['distribution'] == "Ubuntu"
+
+ - name: Instalar paquetes en Ubuntu
+   ansible.builtin.apt:
+     name: "{{ item }}"
+     state: present 
+   loop:
+    - systemd-timesyncd
+    - apparmor-profiles
+    - libsemanage1
+    - apparmor-utils
+   when: ansible_facts['distribution'] == "Ubuntu"
+
+ - name: ufw activado
+   ansible.builtin.systemd:
+     tags: test
+     name: ufw
+     state: started
+     enabled: yes
+   when: ansible_facts['distribution'] == "Ubuntu"
+
+ - name: Habilitar OpenSSH en ufw
+   community.general.ufw:
+     rule: allow
+     state: enabled
+     name: "OpenSSH"
+   notify: restart ufw
+   when: ansible_facts['distribution'] == "Ubuntu"
+
+ - name: Habilitar “apparmor” en modo estricto
+   command:
+     cmd: aa-enforce /etc/apparmor.d/*
+   when: ansible_facts['distribution'] == "Ubuntu"
+
+ - name: Reiniciar y habilitar “apparmor”
+   ansible.builtin.systemd:
+     name: apparmor.service
+     state: restarted
+     enabled: yes
+   when: ansible_facts['distribution'] == "Ubuntu"
+
+# Configuración para básica para todos los equipos
+
+ - name: Configurar zona horaria
+   community.general.timezone:
+     name: "{{ timezone }}"
+   notify: service systemd-timesyncd
+
+ - name: Cargar los servidores “ntp” en “/etc/systemd/timesyncd.conf”
+   lineinfile:
+    path: /etc/systemd/timesyncd.conf
+    line: "NTP={{ ntpserver1 }} {{ ntpserver2 }} {{ ntpserver2 }}"
+    state: present
+   notify: service systemd-timesyncd

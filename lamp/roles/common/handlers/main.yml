@@ -1,0 +1,16 @@
+---
+# Handler para tareas básicas en Ubuntu
+
+# Reiniciar y dejar habilitado el servicio “timesyncd”
+- name: service systemd-timesyncd
+  ansible.builtin.systemd:
+    name: systemd-timesyncd
+    state: restarted
+    enabled: yes 
+
+# Reiniciar y dejar habilitado el servicio “ufw”
+- name: restart ufw
+  ansible.builtin.systemd:
+    name: ufw 
+    state: restarted 
+    enabled: yes
