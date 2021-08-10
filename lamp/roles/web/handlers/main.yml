@@ -13,3 +13,10 @@
     name: ufw 
     state: restarted 
     enabled: yes
+
+# Reiniciar y dejar habilitado el servicio “httpd”
+- name: httpd restart
+  ansible.builtin.systemd:
+    name: httpd
+    state: restarted
+    enabled: yes

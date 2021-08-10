@@ -4,7 +4,6 @@
 
 - name: Aplicar configuración básica a todos los equipos
   hosts: all
-  gather_facts: false
   become: yes
   tags:
    - basic
